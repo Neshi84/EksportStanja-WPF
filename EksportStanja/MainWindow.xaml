@@ -1,0 +1,78 @@
+﻿<Window x:Class="EksportStanja.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.FontWeight="Medium"
+        TextElement.FontSize="14"
+        FontFamily="{materialDesign:MaterialDesignFont}"
+        mc:Ignorable="d"
+        Title="Eksport Stanja"
+        Height="500"
+        Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="20" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+
+        <Button Margin="0 5 10 5"
+                Width="auto"
+                Height="30"
+                Content="Stanje odeljenske"
+                Grid.Column="1"
+                Grid.Row="1"
+                Click="Button_Click">
+        </Button>
+        <Button x:Name="centralniBtn"
+                Margin="0 5 10 5"
+                Width="auto"
+                Height="30"
+                Content="Stanje centralni"
+                Grid.Column="2"
+                Grid.Row="1"
+                Click="centralniBtn_Click">
+        </Button>
+        <Button x:Name="ukupnoBtn"
+                Margin="0 5 10 5"
+                Width="auto"
+                Height="30"
+                Content="Stanje ukupno"
+                Grid.Column="3"
+                Grid.Row="1">
+        </Button>
+        <Button x:Name="sacuvajBtn"
+                Margin="0 5 0 5"
+                Width="auto"
+                Height="30"
+                Content="Sacuvaj"
+                Grid.Column="5"
+                Grid.Row="1"
+                Click="sacuvajBtn_Click">
+        </Button>
+        <DataGrid Name="dataGrid"
+                  Grid.Row="2"
+                  Grid.Column="1"
+                  Grid.ColumnSpan="5"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True">
+        </DataGrid>
+    </Grid>
+</Window>
