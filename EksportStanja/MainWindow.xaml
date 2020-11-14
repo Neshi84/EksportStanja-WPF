@@ -27,6 +27,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="10" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
@@ -34,27 +35,41 @@
         <Button Margin="0 5 10 5"
                 Width="auto"
                 Height="30"
-                Content="Stanje odeljenske"
                 Grid.Column="1"
                 Grid.Row="1"
                 Click="Button_Click">
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0 0 5 0"
+                           Text="Stanje odeljenske" />
+                <materialDesign:PackIcon Kind="FolderOpen" />
+            </StackPanel>
         </Button>
         <Button x:Name="centralniBtn"
                 Margin="0 5 10 5"
                 Width="auto"
                 Height="30"
-                Content="Stanje centralni"
                 Grid.Column="2"
                 Grid.Row="1"
                 Click="centralniBtn_Click">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0 0 5 0"
+                           Text="Stanje centralni" />
+                <materialDesign:PackIcon Kind="FolderOpen" />
+            </StackPanel>
         </Button>
         <Button x:Name="ukupnoBtn"
                 Margin="0 5 10 5"
                 Width="auto"
-                Height="30"
-                Content="Stanje ukupno"
+                Height="30"                
                 Grid.Column="3"
-                Grid.Row="1">
+                Grid.Row="1"
+                Click="ukupnoBtn_Click">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0 0 5 0"
+                           Text="Ulaz lekova" />
+                <materialDesign:PackIcon Kind="FolderOpen" />
+            </StackPanel>
         </Button>
         <Button x:Name="sacuvajBtn"
                 Margin="0 5 0 5"
@@ -65,14 +80,17 @@
                 Grid.Row="1"
                 Click="sacuvajBtn_Click">
         </Button>
+       
         <DataGrid Name="dataGrid"
-                  Grid.Row="2"
+                  ItemsSource="{Binding lista}"         
+                  Grid.Row="3"
                   Grid.Column="1"
                   Grid.ColumnSpan="5"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
+                  AutoGenerateColumns="True"
+                  AutoGeneratingColumn="OnAutoGeneratingColumn"
+                  CanUserAddRows="True"
                   CanUserDeleteRows="False"
-                  IsReadOnly="True">
+                  IsReadOnly="False">
         </DataGrid>
     </Grid>
 </Window>

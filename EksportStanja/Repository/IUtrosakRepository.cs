@@ -1,13 +1,14 @@
 ﻿using EksportStanja.Models;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace EksportStanja.Repository
 {
     public interface IUtrosakRepository
     {
-        public IEnumerable<Utrosak> GetAll(string path);
+        public ObservableCollection<Lek> GetAll(string path);
 
-        public IEnumerable<Utrosak> GetAllCentralni(string path);
-        public IEnumerable<UtrosakPoStavkama> eksportStanjaCentralniPoStavkama(string filePath);
+        public ObservableCollection<Lek> GetAllCentralni(string path);
+        public ObservableCollection<Lek> EksportStanjaCentralniPoStavkama(string filePath);
     }
 }

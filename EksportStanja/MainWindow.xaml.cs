@@ -1,33 +1,44 @@
-﻿using ClosedXML;
-using EksportStanja.Models;
+﻿using EksportStanja.Models;
 using EksportStanja.Repository;
 using EksportStanja.Services;
+using EksportStanja.ViewModels;
 using Microsoft.Win32;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 
 namespace EksportStanja
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        public MainViewModel mainViewModel { get; set; }
         public IUtrosakRepository _utrosakRepo { get; set; }
-        public ISifrarnikRepository _sifrarnikRepository { get; set; }
+        private IExcelService _excelService { get; set; }
+        public ObservableCollection<Lek> lista { get; set; }
 
-        public IExcelService _excelService { get; set; }
+        public ObservableCollection<Lek> listaCentralni { get; set; }
 
-        public List<Utrosak> lista { get; set; }
+        public ObservableCollection<Lek> listaUlazi { get; set; }
 
-        public MainWindow(IUtrosakRepository utrosak, ISifrarnikRepository sifrarnikRepository, IExcelService excelService)
+        public MainWindow(IUtrosakRepository repo, IExcelService excelService)
         {
-            _utrosakRepo = utrosak;
-            _sifrarnikRepository = sifrarnikRepository;
+            _utrosakRepo = repo;
             _excelService = excelService;
+            lista = new ObservableCollection<Lek>();
 
+            DataContext = this;
             InitializeComponent();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnAutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            if (e.PropertyType == typeof(System.DateTime))
+                (e.Column as DataGridTextColumn).Binding.StringFormat = "dd.MM.yyyy";
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -35,22 +46,42 @@ namespace EksportStanja
             var openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
-                lista = _utrosakRepo.GetAll(openFileDialog.FileName).ToList();
-                dataGrid.ItemsSource = lista;
+                lista = _excelService.GetOdeljenske(openFileDialog.FileName);
             }
         }
 
         private void sacuvajBtn_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Excel | *.xlsx";
-            saveFileDialog.DefaultExt = "xlsx";
-            if (saveFileDialog.ShowDialog() == true)
+
+            List<Lek> nepostojeci = new List<Lek>();
+            List<Lek> nereseni = new List<Lek>();
+            foreach (var item in lista)
             {
-                _excelService.Export(lista, saveFileDialog.FileName);
+                if (listaCentralni.Any(i => i.Jkl == item.Jkl && i.Kpp == "062"))
+                {
+                    listaCentralni.Where(c => c.Jkl == item.Jkl).Aggregate((s1, s2) => s1.DatumUlaz > s2.DatumUlaz ? s1 : s2).Kolicina += item.Kolicina;
+                }
+                else
+                {
+                    if (listaUlazi.Any(i => i.Jkl == item.Jkl && i.Kpp == "062"))
+                    {
+                        var nep = listaUlazi.Where(c => c.Jkl == item.Jkl && c.Kpp == "062").Aggregate((s1, s2) => s1.DatumUlaz > s2.DatumUlaz ? s1 : s2);
+                        nep.Kolicina = item.Kolicina;
+
+                        listaCentralni.Add(nep);
+                        nepostojeci.Add(nep);
+                    }
+                    else
+                    {
+                        listaCentralni.Add(item);
+                        nereseni.Add(item);
+                    }
+                }
             }
 
-            MessageBox.Show("Gotovo!");
+            lista = listaCentralni;
+
+            _excelService.Export<Lek>(listaCentralni.ToList(), "StanjeUkupno.xlsx");
         }
 
         private void centralniBtn_Click(object sender, RoutedEventArgs e)
@@ -58,23 +89,16 @@ namespace EksportStanja
             var openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
-                var lista = _utrosakRepo.eksportStanjaCentralniPoStavkama(openFileDialog.FileName).ToList();
-                dataGrid.ItemsSource = lista;
+                listaCentralni = _utrosakRepo.EksportStanjaCentralniPoStavkama(openFileDialog.FileName);
+            }
+        }
 
-                var col = typeof(UtrosakPoStavkama).GetProperties().OrderBy(i=> i.GetAttributes<DisplayAttribute>()[0].Order);
-
-                dataGrid.ItemsSource = lista;
-                dataGrid.AutoGenerateColumns=false;
-
-                foreach (var item in col)
-                {
-                    DataGridTextColumn textColumn = new DataGridTextColumn();
-                    textColumn.Header =item.Name;
-                    textColumn.Binding =new Binding(item.Name);
-                    dataGrid.Columns.Add(textColumn);
-                }
-                
-
+        private void ukupnoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                listaUlazi = _utrosakRepo.EksportStanjaCentralniPoStavkama(openFileDialog.FileName);
             }
         }
     }

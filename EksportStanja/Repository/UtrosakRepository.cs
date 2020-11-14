@@ -1,6 +1,7 @@
 ﻿using EksportStanja.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
@@ -22,7 +23,7 @@ namespace EksportStanja.Repository
             _repo = repo;
         }
 
-        public IEnumerable<Utrosak> GetAll(string xmlFilePath)
+        public ObservableCollection<Lek> GetAll(string xmlFilePath)
         {
             Dictionary<string, double> lekovi = new Dictionary<string, double>();
 
@@ -52,17 +53,17 @@ namespace EksportStanja.Repository
                 }
             }
 
-            return convertToLekObject(lekovi);
+            return ConvertToLekObject(lekovi);
         }
 
-        public IEnumerable<Utrosak> GetAllCentralni(string filePath)
+        public ObservableCollection<Lek> GetAllCentralni(string filePath)
         {
-            var lista = new List<Utrosak>();
+            var lista = new List<Lek>();
             var stanje = XElement.Load(filePath).Descendants("lek_stavka");
 
             foreach (var item in stanje)
             {
-                Utrosak utrosak = new Utrosak()
+                Lek utrosak = new Lek()
                 {
                     Jkl = item.Element("sifra").Value,
                     Kolicina = Math.Round(double.Parse(item.Element("kolicina").Value, provider), 2),
@@ -73,24 +74,24 @@ namespace EksportStanja.Repository
             }
 
             var suma = lista.GroupBy(l => new { l.Jkl, l.FabrickoIme })
-                            .Select(g => new Utrosak
+                            .Select(g => new Lek
                             {
                                 Jkl = g.Key.Jkl,
                                 FabrickoIme = g.Key.FabrickoIme,
                                 Kolicina = g.Sum(s => s.Kolicina)
                             });
 
-            return suma;
+            return new ObservableCollection<Lek>(suma);
         }
 
-        public IEnumerable<UtrosakPoStavkama> eksportStanjaCentralniPoStavkama(string filePath)
+        public ObservableCollection<Lek> EksportStanjaCentralniPoStavkama(string filePath)
         {
-            var lista = new List<UtrosakPoStavkama>();
+            var lista = new ObservableCollection<Lek>();
             var stanje = XElement.Load(filePath).Descendants("lek_stavka");
 
             foreach (var item in stanje)
             {
-                UtrosakPoStavkama lek = new UtrosakPoStavkama()
+                Lek lek = new Lek()
                 {
                     Jkl = item.Element("sifra").Value,
                     Kolicina = Math.Round(double.Parse(item.Element("kolicina").Value, provider), 2),
@@ -98,7 +99,7 @@ namespace EksportStanja.Repository
                     Kpp = item.Element("kpp").Value,
                     DatumRok = item.Element("datumRok").Value,
                     DatumUlaz = DateTime.ParseExact(item.Element("datumUlaz").Value, "dd.MM.yyyy", CultureInfo.InvariantCulture),
-                    CenaLeka = double.Parse(item.Element("cenaleka").Value, provider)
+                    Cena = double.Parse(item.Element("cenaleka").Value, provider)
                 };
 
                 lista.Add(lek);
@@ -107,14 +108,14 @@ namespace EksportStanja.Repository
             return lista;
         }
 
-        private List<Utrosak> convertToLekObject(Dictionary<string, double> lekovi)
+        private ObservableCollection<Lek> ConvertToLekObject(Dictionary<string, double> lekovi)
         {
-            List<Utrosak> lista = new List<Utrosak>();
+           var lista = new ObservableCollection<Lek>();
 
             foreach (KeyValuePair<string, double> entry in lekovi)
             {
                
-                Utrosak lek = new Utrosak()
+                Lek lek = new Lek()
                 {
                     FabrickoIme = _repo.Get(entry.Key, "062"),
                     Jkl = entry.Key,

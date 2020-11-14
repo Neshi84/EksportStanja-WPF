@@ -1,13 +1,55 @@
 ﻿using ClosedXML;
 using ClosedXML.Excel;
+using EksportStanja.Models;
+using EksportStanja.Repository;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 
 namespace EksportStanja.Services
 {
     public class ExcelService : IExcelService
     {
+        private ISifrarnikRepository _repo { get; set; }
+
+        private NumberFormatInfo provider = new NumberFormatInfo()
+        {
+            NumberDecimalSeparator = "."
+        };
+        public ExcelService(ISifrarnikRepository repo)
+        {
+            _repo = repo;
+        }
+        public ObservableCollection<Lek> GetOdeljenske(string excel)
+        {
+            var categories = new ObservableCollection<Lek>();
+
+            var wb = new XLWorkbook(excel);
+
+            var ws = wb.Worksheet(1);
+
+            var firstRowUsed = ws.FirstRowUsed();
+
+            while (!firstRowUsed.Cell(1).IsEmpty())
+            {
+                Lek lek = new Lek()
+                {
+                    Jkl = firstRowUsed.Cell(1).GetString(),
+                    Kolicina = double.Parse(firstRowUsed.Cell(2).GetString()),
+                    Cena = double.Parse(firstRowUsed.Cell(3).GetString()),
+                    FabrickoIme=_repo.Get(firstRowUsed.Cell(1).GetString(),"062")
+                };
+
+                categories.Add(lek);
+
+                firstRowUsed = firstRowUsed.RowBelow();
+            }
+            return categories;
+        }
+
+
         public void Export<T>(List<T> data, string filePath, string sheetName = "Sheet1")
         {
             var workbook = new XLWorkbook();
