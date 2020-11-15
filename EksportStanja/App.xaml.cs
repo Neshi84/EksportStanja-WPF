@@ -40,6 +40,7 @@ namespace EksportStanja
             serviceCollection.AddTransient<IUtrosakRepository, UtrosakRepository>();
             serviceCollection.AddTransient<ISifrarnikRepository, SifrarnikRepository>();
             serviceCollection.AddTransient<IExcelService, ExcelService>();
+            serviceCollection.AddTransient<IXmlService, XmlService>();
         }
     }
 }

@@ -3,6 +3,7 @@ using EksportStanja.Repository;
 using EksportStanja.Services;
 using EksportStanja.ViewModels;
 using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -17,16 +18,18 @@ namespace EksportStanja
         public MainViewModel mainViewModel { get; set; }
         public IUtrosakRepository _utrosakRepo { get; set; }
         private IExcelService _excelService { get; set; }
+        private IXmlService _xmlService { get; set; }
         public ObservableCollection<Lek> lista { get; set; }
 
         public ObservableCollection<Lek> listaCentralni { get; set; }
 
         public ObservableCollection<Lek> listaUlazi { get; set; }
 
-        public MainWindow(IUtrosakRepository repo, IExcelService excelService)
+        public MainWindow(IUtrosakRepository repo, IExcelService excelService, IXmlService xmlService)
         {
             _utrosakRepo = repo;
             _excelService = excelService;
+            _xmlService = xmlService;
             lista = new ObservableCollection<Lek>();
 
             DataContext = this;
@@ -52,7 +55,12 @@ namespace EksportStanja
 
         private void sacuvajBtn_Click(object sender, RoutedEventArgs e)
         {
-
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Filter = "XML-File | *.xml",
+                FileName = "StanjeOsigurani.xml"
+            };
             List<Lek> nepostojeci = new List<Lek>();
             List<Lek> nereseni = new List<Lek>();
             foreach (var item in lista)
@@ -82,6 +90,12 @@ namespace EksportStanja
             lista = listaCentralni;
 
             _excelService.Export<Lek>(listaCentralni.ToList(), "StanjeUkupno.xlsx");
+
+            bool? result = saveFileDialog.ShowDialog();
+            if (result == true)
+            {
+                _xmlService.saveXml(listaCentralni.ToList(), saveFileDialog.FileName);
+            }
         }
 
         private void centralniBtn_Click(object sender, RoutedEventArgs e)
