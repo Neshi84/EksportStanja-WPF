@@ -67,7 +67,7 @@ namespace EksportStanja
             {
                 if (listaCentralni.Any(i => i.Jkl == item.Jkl && i.Kpp == "062"))
                 {
-                    listaCentralni.Where(c => c.Jkl == item.Jkl).Aggregate((s1, s2) => s1.DatumUlaz > s2.DatumUlaz ? s1 : s2).Kolicina += item.Kolicina;
+                    listaCentralni.Where(c => c.Jkl == item.Jkl && c.Kpp == "062").Aggregate((s1, s2) => s1.DatumUlaz > s2.DatumUlaz ? s1 : s2).Kolicina += item.Kolicina;
                 }
                 else
                 {
@@ -96,6 +96,8 @@ namespace EksportStanja
             {
                 _xmlService.saveXml(listaCentralni.ToList(), saveFileDialog.FileName);
             }
+
+            MessageBox.Show("Gotovo!");
         }
 
         private void centralniBtn_Click(object sender, RoutedEventArgs e)
